@@ -1,0 +1,5 @@
+streamlit>=1.38
+anthropic>=0.34
+pdf2image>=1.17
+pillow>=10.0
+fpdf2>=2.7
