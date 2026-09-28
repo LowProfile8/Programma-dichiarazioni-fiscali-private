@@ -1,0 +1,69 @@
+"""
+modules/anno_precedente.py — penultimo passo, sempre facoltativo.
+
+Serve a un controllo di coerenza finale: si chiede il totale della sostanza
+in titoli e conti dell'anno scorso (Modulo 2, riga «Totale», colonna
+«Sostanza») e il riepilogo lo confronta con quello di quest'anno, segnalando
+le differenze importanti.
+"""
+
+import streamlit as st
+
+from core import state
+from core.models import DichiarazioneFiscale
+from core.ui_helpers import campo_con_fallback, mostra_esempio_documento
+
+
+def render(dichiarazione: DichiarazioneFiscale) -> None:
+    st.header("Dichiarazione dell'anno precedente (facoltativo)")
+    st.caption(
+        "Se hai a portata di mano la dichiarazione dell'anno scorso, ci serve per un controllo finale: "
+        "confrontiamo i totali di quest'anno con quelli dell'anno scorso e ti segnaliamo le differenze importanti."
+    )
+
+    st.subheader("Somma dei tuoi titoli e conti")
+    st.write(
+        "Nel **Modulo 2** della dichiarazione dell'anno scorso (l'«Elenco dei titoli e di altri collocamenti "
+        "di capitali») cerca la riga **Totale** e riporta qui l'importo della colonna **Sostanza** "
+        "(nell'esempio è cerchiato in rosso)."
+    )
+    campo_con_fallback(
+        dichiarazione.sostanza_titoli_anno_precedente,
+        "Totale della sostanza in titoli e conti dell'anno scorso (Fr.)",
+        key="sostanza_titoli_anno_prec",
+        descrizione_ricerca="Totale colonna Sostanza del Modulo 2 (Elenco titoli) dell'anno precedente",
+    )
+    mostra_esempio_documento(
+        "modulo2_totale_anno_precedente_esempio.png",
+        "Modulo 2: il valore da riportare è il «Totale» della colonna «Sostanza» (cerchiato in rosso).",
+    )
+
+    st.divider()
+    st.subheader("Allega la dichiarazione dell'anno scorso")
+    file_caricato = st.file_uploader(
+        "Dichiarazione d'imposta dell'anno precedente (PDF completo)", type=["pdf"], key="upload_anno_precedente"
+    )
+    mostra_esempio_documento(
+        "dichiarazione_anno_precedente_esempio.png",
+        "La dichiarazione d'imposta completa (tutte le pagine, non solo il Modulo 1) generata da eTax.",
+    )
+    if file_caricato is not None:
+        st.session_state["pdf_anno_precedente_bytes"] = file_caricato.getvalue()
+        st.success(f"Caricata: {file_caricato.name}")
+    elif "pdf_anno_precedente_bytes" in st.session_state:
+        st.info("Dichiarazione dell'anno precedente già caricata in questa sessione.")
+
+    st.divider()
+    col_back, col_skip, col_next = st.columns([1, 1, 1])
+    with col_back:
+        if st.button("← Indietro"):
+            state.go_back()
+            st.rerun()
+    with col_skip:
+        if st.button("Salta questo passo"):
+            state.go_next()
+            st.rerun()
+    with col_next:
+        if st.button("Avanti →", type="primary"):
+            state.go_next()
+            st.rerun()
