@@ -1,0 +1,7 @@
+streamlit>=1.45
+pypdf>=4.0
+reportlab>=4.0
+pillow>=10.0
+fpdf2>=2.7
+anthropic>=0.34
+pdf2image>=1.17
